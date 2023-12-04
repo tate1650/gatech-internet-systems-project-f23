@@ -15,6 +15,7 @@ const { createHash } = require("crypto");
 const EC = require('elliptic').ec;
 const ec = new EC('secp256k1');
 
+
 interface Blockchain {
   blocks: Block[];
 }
@@ -46,7 +47,7 @@ class Block {
   }
 
   calculateHash = () => {
-    const hash = createHash('sha256')
+    const hash = createHash('sha256');
 
     const hashedValues = [
       this.timestamp.toString(), 
@@ -57,6 +58,18 @@ class Block {
     hashedValues.map((elem) => hash.update(elem));
 
     return hash.digest().toString('hex');
+  }
+
+  isTransactionValid = (transaction: Transaction) => {
+    const transactionCopy = {...transaction};
+    delete transactionCopy.signature; // Since that wasn't signed, of course
+    
+    const hash = createHash('sha256');
+    hash.update(JSON.stringify(transactionCopy));
+    const transactionHash = hash.digest().toString('hex');
+    const publicKey = ec.keyFromPublic(transaction.reporterPublicKey, 'hex');
+    
+    return publicKey.verify(transactionHash, transaction.signature);
   }
 
   isBlockValid = (previousBlock : Block | null) => {
@@ -90,8 +103,10 @@ class Blockchain {
       reportChecksum: "12345abcde",
       followUpDeadline: new Date('Mon, 27 Nov 2023 08:09:50 GMT').setFullYear(2024),
     };
-    const sampleTransactionValues = Object.keys(sampleTransaction).map(key => sampleTransaction[key]);
-    const signature = keyPair.sign(sampleTransactionValues);
+    const hash = createHash('sha256');
+    hash.update(JSON.stringify(sampleTransaction));
+    const sampleTransactionHash = hash.digest().toString('hex')
+    const signature = keyPair.sign(sampleTransactionHash);
     sampleTransaction.signature = signature.toDER('hex');
 
     const genesisBlock : Block = new Block("0".repeat(64), [sampleTransaction]);
@@ -118,6 +133,5 @@ class Blockchain {
 
 const infraChain : Blockchain = new Blockchain();
 infraChain.createGenesisBlock();
-// infraChain.blocks[0].transactions[0].structureId = 1;
-console.log(infraChain.blocks[0].hash);
-console.log(infraChain.isChainValid());
+console.log(infraChain.blocks[0].isTransactionValid(infraChain.blocks[0].transactions[0]));
+// console.log(infraChain.isChainValid());

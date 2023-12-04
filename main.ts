@@ -42,7 +42,9 @@ class Block {
     hashedValues.map((elem) => hash.update(elem));
 
     return hash.digest().toString('hex');
-  } 
+  }
+
+  isBlockValid = () => (this.calculateHash() == this.hash);
 }
 
 class Blockchain {
@@ -70,9 +72,18 @@ class Blockchain {
 
     this.addBlock(genesisBlock);
   }
+
+  isChainValid = () => this.blocks.reduce(
+    (previousBlocksWereValid, block) => {
+      return previousBlocksWereValid && block.isBlockValid();
+    },
+    true
+  );
 }
 
 
 const infraChain : Blockchain = new Blockchain();
 infraChain.createGenesisBlock();
+infraChain.blocks[0].transactions[0].structureId = 1;
 console.log(infraChain.blocks[0].hash);
+console.log(infraChain.isChainValid());

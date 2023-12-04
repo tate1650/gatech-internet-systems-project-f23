@@ -12,6 +12,7 @@ var Block = /** @class */ (function () {
             hashedValues.map(function (elem) { return hash.update(elem); });
             return hash.digest().toString('hex');
         };
+        this.isBlockValid = function () { return (_this.calculateHash() == _this.hash); };
         this.timestamp = new Date('Mon, 27 Nov 2024 08:09:50 GMT').getTime();
         this.previousHash = previousHash;
         this.transactions = transactions;
@@ -39,10 +40,15 @@ var Blockchain = /** @class */ (function () {
             var genesisBlock = new Block("0".repeat(64), [sampleTransaction]);
             _this.addBlock(genesisBlock);
         };
+        this.isChainValid = function () { return _this.blocks.reduce(function (previousBlocksWereValid, block) {
+            return previousBlocksWereValid && block.isBlockValid();
+        }, true); };
         this.blocks = [];
     }
     return Blockchain;
 }());
 var infraChain = new Blockchain();
 infraChain.createGenesisBlock();
-console.log(infraChain.blocks[0]);
+infraChain.blocks[0].transactions[0].structureId = 1;
+console.log(infraChain.blocks[0].hash);
+console.log(infraChain.isChainValid());

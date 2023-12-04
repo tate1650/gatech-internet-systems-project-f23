@@ -44,7 +44,15 @@ class Block {
     return hash.digest().toString('hex');
   }
 
-  isBlockValid = () => (this.calculateHash() == this.hash);
+  isBlockValid = (previousBlock : Block | null) => {
+    const isBlockHashValid = (this.calculateHash() == this.hash);
+
+    const isPreviousBlockHashValid = (
+      previousBlock == null || previousBlock.hash == this.previousHash
+    );
+
+    return isBlockHashValid && isPreviousBlockHashValid;
+  }
 }
 
 class Blockchain {
@@ -74,11 +82,20 @@ class Blockchain {
   }
 
   isChainValid = () => this.blocks.reduce(
-    (previousBlocksWereValid, block) => {
-      return previousBlocksWereValid && block.isBlockValid();
+    (
+      accumulator : [boolean, Block | null], 
+      block : Block
+    ) => {
+      const arePreviousBlocksValid = accumulator[0];
+      const previousBlock = accumulator[1];
+      
+      const areBlocksValid = arePreviousBlocksValid && block.isBlockValid(previousBlock);
+
+      const result : [boolean, Block] = [areBlocksValid, block];
+      return result;
     },
-    true
-  );
+    [true, null]
+  )[0];
 }
 
 

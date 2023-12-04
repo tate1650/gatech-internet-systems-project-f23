@@ -72,6 +72,13 @@ class Block {
     return publicKey.verify(transactionHash, transaction.signature);
   }
 
+  areAllTransactionsValid = () => this.transactions.reduce(
+    (areAllPreviousTransactionsValid, transaction) => (
+      areAllPreviousTransactionsValid && this.isTransactionValid(transaction)
+    ),
+    true
+  )
+
   isBlockValid = (previousBlock : Block | null) => {
     const isBlockHashValid = (this.calculateHash() == this.hash);
 
@@ -88,7 +95,11 @@ class Blockchain {
     this.blocks = [];
   }
 
-  addBlock = (block: Block) => { this.blocks.push(block); }
+  addBlock = (block: Block) => {
+    if (!block.areAllTransactionsValid()) return;
+
+    this.blocks.push(block); 
+  }
 
   createGenesisBlock = () => {
     if (this.blocks.length !== 0) return;
@@ -133,5 +144,5 @@ class Blockchain {
 
 const infraChain : Blockchain = new Blockchain();
 infraChain.createGenesisBlock();
-console.log(infraChain.blocks[0].isTransactionValid(infraChain.blocks[0].transactions[0]));
+console.log(infraChain.blocks[0]);
 // console.log(infraChain.isChainValid());

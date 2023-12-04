@@ -1,3 +1,13 @@
+/* 
+  InfraChain: A blockchain for infrastructure reporting and documentation
+  Author: Tate Mauzy
+  For the Georgia Tech CS6675 Final Project
+  
+  The following blockchain implementation was based heavily on the YouTube
+  blockchain tutorial by Simply Explained, which can be found on this
+  playlist: https://www.youtube.com/playlist?list=PLzvRQMJ9HDiTqZmbtFisdXFxul5k0F-Q4
+*/
+
 const { createHash } = require("crypto");
 
 interface Blockchain {

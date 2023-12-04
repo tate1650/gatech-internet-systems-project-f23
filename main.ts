@@ -3,12 +3,17 @@
   Author: Tate Mauzy
   For the Georgia Tech CS6675 Final Project
   
-  The following blockchain implementation was based heavily on the YouTube
-  blockchain tutorial by Simply Explained, which can be found on this
-  playlist: https://www.youtube.com/playlist?list=PLzvRQMJ9HDiTqZmbtFisdXFxul5k0F-Q4
+  The following blockchain implementation was based heavily on the first
+  video in the YouTube blockchain tutorial by Simply Explained, which can be 
+  found here: https://www.youtube.com/watch?v=zVqczFZr124&list=PLzvRQMJ9HDiTqZmbtFisdXFxul5k0F-Q4&index=1
 */
 
 const { createHash } = require("crypto");
+// Use of elliptic library for ECC taken from Simply Explained's YouTube 
+// blockchain tutorial Part 4: Signing Transactions, at
+// https://www.youtube.com/watch?v=kWQ84S13-hw&list=PLzvRQMJ9HDiTqZmbtFisdXFxul5k0F-Q4&index=4.
+const EC = require('elliptic').ec;
+const ec = new EC('secp256k1');
 
 interface Blockchain {
   blocks: Block[];
@@ -29,7 +34,7 @@ interface Transaction {
   reportLink: string;
   reportChecksum: string;
   followUpDeadline: number; // unix timestamp
-  signature: string;
+  signature?: string;
 }
 
 class Block {
@@ -75,16 +80,19 @@ class Blockchain {
   createGenesisBlock = () => {
     if (this.blocks.length !== 0) return;
 
+    const keyPair = ec.genKeyPair();
     const sampleTransaction : Transaction = {
       structureId: -1,
-      reporterPublicKey: "SAMPLEKEY",
+      reporterPublicKey: keyPair.getPublic('hex'),
       structureCondition: "fair",
       reportSummary: "No building was examined; this is a test.",
       reportLink: "https://localhost:3000",
       reportChecksum: "12345abcde",
       followUpDeadline: new Date('Mon, 27 Nov 2023 08:09:50 GMT').setFullYear(2024),
-      signature: createHash("sha256", "Test")
     };
+    const sampleTransactionValues = Object.keys(sampleTransaction).map(key => sampleTransaction[key]);
+    const signature = keyPair.sign(sampleTransactionValues);
+    sampleTransaction.signature = signature.toDER('hex');
 
     const genesisBlock : Block = new Block("0".repeat(64), [sampleTransaction]);
 
@@ -108,9 +116,8 @@ class Blockchain {
   )[0];
 }
 
-
 const infraChain : Blockchain = new Blockchain();
 infraChain.createGenesisBlock();
-infraChain.blocks[0].transactions[0].structureId = 1;
+// infraChain.blocks[0].transactions[0].structureId = 1;
 console.log(infraChain.blocks[0].hash);
 console.log(infraChain.isChainValid());

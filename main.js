@@ -19,15 +19,30 @@ var Block = /** @class */ (function () {
     }
     return Block;
 }());
-var firstTransaction = {
-    structureId: 1,
-    reporterPublicKey: "sAmPlEkEy",
-    structureCondition: "fair",
-    reportSummary: "This building is fine",
-    reportLink: "https://localhost:3000/yeet",
-    reportChecksum: "12345abcde",
-    followUpDeadline: new Date('Mon, 27 Nov 2023 08:09:50 GMT').setFullYear(2024),
-    signature: createHash("sha256", "Test")
-};
-var originBlock = new Block("0".repeat(64), [firstTransaction]);
-console.log(originBlock.hash);
+var Blockchain = /** @class */ (function () {
+    function Blockchain() {
+        var _this = this;
+        this.addBlock = function (block) { _this.blocks.push(block); };
+        this.createGenesisBlock = function () {
+            if (_this.blocks.length !== 0)
+                return;
+            var sampleTransaction = {
+                structureId: -1,
+                reporterPublicKey: "SAMPLEKEY",
+                structureCondition: "fair",
+                reportSummary: "No building was examined; this is a test.",
+                reportLink: "https://localhost:3000",
+                reportChecksum: "12345abcde",
+                followUpDeadline: new Date('Mon, 27 Nov 2023 08:09:50 GMT').setFullYear(2024),
+                signature: createHash("sha256", "Test")
+            };
+            var genesisBlock = new Block("0".repeat(64), [sampleTransaction]);
+            _this.addBlock(genesisBlock);
+        };
+        this.blocks = [];
+    }
+    return Blockchain;
+}());
+var infraChain = new Blockchain();
+infraChain.createGenesisBlock();
+console.log(infraChain.blocks[0]);

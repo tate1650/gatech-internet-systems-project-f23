@@ -13,8 +13,13 @@ interface Block {
 }
 
 interface Transaction {
-  report: string;
-  followUpDeadline: number;
+  structureId: number;
+  reporterPublicKey: string;
+  structureCondition: "very poor" | "poor" | "fair" | "good" | "very good";
+  reportSummary: string;
+  reportLink: string;
+  reportChecksum: string;
+  followUpDeadline: number; // unix timestamp
   signature: string;
 }
 
@@ -49,8 +54,13 @@ class Block {
   } 
 }
 
-const firstTransaction = {
-  report: "This building is fine",
+const firstTransaction : Transaction = {
+  structureId: 1,
+  reporterPublicKey: "sAmPlEkEy",
+  structureCondition: "fair",
+  reportSummary: "This building is fine",
+  reportLink: "https://localhost:3000/yeet",
+  reportChecksum: "12345abcde",
   followUpDeadline: new Date('Mon, 27 Nov 2023 08:09:50 GMT').setFullYear(2024),
   signature: createHash("sha256", "Test")
 };
